@@ -3,14 +3,14 @@
 ## Design Principles
 
 1. **Repo-local** — context lives next to the code it documents (`.context/` directory)
-2. **Zero install** — `npx ctxgraph` works without global installation
+2. **Zero install** — `npx docdrift` works without global installation
 3. **Multi-language** — tree-sitter WASM grammars, no native compilation needed
-4. **AI-native** — generates agent rules on init so AI assistants use ctxgraph automatically
+4. **AI-native** — generates agent rules on init so AI assistants use docdrift automatically
 5. **Git-native** — context nodes are markdown, versioned alongside code, diffable in PRs
 
 ## Directory Structure
 
-After `npx ctxgraph init`:
+After `npx docdrift init`:
 
 ```
 my-service/
@@ -39,7 +39,7 @@ my-service/
 | `.context/nodes/**/*.md`             | Yes       | The actual documentation                             |
 | `.context/verified.json`             | Yes       | Baseline hashes — shared so drift works for everyone |
 | `.context/index.json`                | No        | Auto-generated from nodes, rebuilt on demand         |
-| Agent rules (`.claude/`, `.cursor/`) | Yes       | So AI assistants use ctxgraph in any clone           |
+| Agent rules (`.claude/`, `.cursor/`) | Yes       | So AI assistants use docdrift in any clone           |
 
 ## Context Node Format
 
@@ -67,41 +67,41 @@ relates_to:
 
 ### Differences from PoC
 
-| PoC                                                                 | ctxgraph                                                         |
+| PoC                                                                 | docdrift                                                         |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | `code_refs` with `repo` + `path` + `symbol`                         | `refs` with `path` + `symbol` (repo-local, no repo field needed) |
 | Cross-repo node IDs like `receipt-autobooking/confidence-threshold` | Same ID format, but nodes live in the repo they document         |
 | Separate context repo                                               | `.context/` in each service repo                                 |
 | `.wintctx-verified.json` in service repo root                       | `.context/verified.json`                                         |
 | Python + tree-sitter C bindings                                     | TypeScript + web-tree-sitter (WASM)                              |
+| `context drift` (redundant name)                                    | `docdrift check` or bare `docdrift`                              |
+| `context set-baseline`                                              | `docdrift pin`                                                   |
+| `context reviewed`                                                  | `docdrift ack`                                                   |
 
 ## Core Components
 
 ### 1. CLI (`src/cli.ts`)
 
-Entry point. Commands grouped into three categories:
+Entry point. v1 ships 8 commands:
 
 **Query** — read-only operations
 
 - `lookup <path>` — find context nodes linked to a file (shows tracked symbols)
 - `show <node-id>` — display full context node with metadata and prose
-- `search --tag <tag>` or `search --query <text>` — discover nodes
-- `graph <node-id>` — show relationships (edges in and out)
 
 **Drift** — change detection lifecycle
 
-- `drift` — compare current method hashes against verified baselines
-- `set-baseline` — record current state as known-good
-- `reviewed <node-id>` — acknowledge drift as intentional
+- bare `docdrift` or `check` — compare current method hashes against verified baselines
+- `pin` — record current state as known-good baseline
+- `ack <node-id>` — acknowledge drift (docs still accurate)
 
-**Maintain** — authoring and curation
+**Maintain** — authoring
 
 - `init` — scaffold `.context/` and generate AI rules
 - `create` — interactive node creation with symbol search
-- `edit <node-id>` — open in editor, lint after save
-- `delete <node-id>` — remove node, handle dangling references
-- `validate` — check all nodes against schema
-- `push` — commit and push context changes (optional, for workflows that want it)
+- `edit <node-id>` — open in editor, validate after save
+
+**Deferred to v2:** `search`, `graph`, `delete`, `validate`, `reindex` (auto-indexing handles most cases).
 
 ### 2. Tree-sitter Engine (`src/ast.ts`)
 
@@ -181,7 +181,7 @@ For each ref in verified.json:
 
 ### 5. Init Scaffolder (`src/init.ts`)
 
-`npx ctxgraph init` does:
+`npx docdrift init` does:
 
 1. Detect repo languages from file extensions
 2. Create `.context/config.json` with repo name (from `package.json`, `.csproj`, or directory name)
@@ -208,12 +208,12 @@ Styled terminal output using `chalk`:
                     ┌─────────────────────┐
                     │  .context/nodes/*.md │ ← authored by humans/AI
                     └──────────┬──────────┘
-                               │ reindex
+                               │ auto-index
                                ▼
                     ┌─────────────────────┐
                     │  .context/index.json │ ← auto-generated
                     └──────────┬──────────┘
-                               │ lookup/search/graph
+                               │ lookup/show
                                ▼
                     ┌─────────────────────┐
                     │   Query results     │ → developer / AI assistant
@@ -227,7 +227,7 @@ Styled terminal output using `chalk`:
                     ┌─────────────────────┐
                     │ .context/verified   │ ← baseline comparison
                     └──────────┬──────────┘
-                               │ drift detection
+                               │ docdrift check
                                ▼
                     ┌─────────────────────┐
                     │   Drift warnings    │ → developer / CI
@@ -238,12 +238,33 @@ Styled terminal output using `chalk`:
 
 ```yaml
 # GitHub Actions example
-- name: Check context drift
-  run: npx ctxgraph drift --ci
+- name: Check for documentation drift
+  run: npx docdrift check --ci
   # Exits non-zero if drift detected, blocks PR
 ```
 
 The `--ci` flag outputs GitHub Actions annotations for inline PR comments on drifted files.
+
+## Daily Workflow
+
+```bash
+# Day 0: Setup
+docdrift init
+docdrift create                     # links OrderService.calculateTotal to a node
+
+# Day N: Morning
+docdrift                            # "2 nodes drifted" — OrderService changed
+
+# Investigate
+docdrift show order-total-rounding  # read the context
+docdrift lookup src/OrderService.ts # see all linked nodes
+
+# After reviewing — docs are still accurate
+docdrift ack order-total-rounding
+
+# After a large refactor
+docdrift pin                        # re-baseline everything
+```
 
 ## Tech Stack
 
