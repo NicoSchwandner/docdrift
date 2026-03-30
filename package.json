@@ -4,11 +4,11 @@
   "description": "Link business decisions to source code. Detect when code drifts from documentation.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NicoSchwandner/docdrift.git"
+    "url": "git+https://github.com/NicoSchwandner/docdrift.git"
   },
   "type": "module",
   "bin": {
-    "docdrift": "./dist/cli.js"
+    "docdrift": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
