@@ -1,6 +1,6 @@
 {
   "name": "docdrift",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Link business decisions to source code. Detect when code drifts from documentation.",
   "repository": {
     "type": "git",
