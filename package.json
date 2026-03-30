@@ -1,0 +1,41 @@
+{
+  "name": "ctxgraph",
+  "version": "0.0.1",
+  "description": "Link business decisions to source code. Detect when code drifts from documentation.",
+  "type": "module",
+  "bin": {
+    "ctxgraph": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest",
+    "lint": "eslint src/",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "documentation",
+    "context",
+    "drift-detection",
+    "tree-sitter",
+    "code-aware-docs",
+    "ai-agent"
+  ],
+  "author": "Nico Schwandner",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "chalk": "^5.0.0",
+    "commander": "^12.0.0",
+    "web-tree-sitter": "^0.24.0",
+    "yaml": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  }
+}
