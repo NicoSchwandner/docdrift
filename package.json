@@ -12,7 +12,9 @@
     "test": "vitest",
     "lint": "eslint src/",
     "prepublishOnly": "npm run build",
-    "release": "npm version patch -m 'v%s' && git push && git push --tags && gh release create v$(node -p \"require('./package.json').version\") --generate-notes"
+    "release": "npm version patch -m 'v%s' && git push && git push --tags && gh release create v$(node -p \"require('./package.json').version\") --generate-notes",
+    "release:minor": "npm version minor -m 'v%s' && git push && git push --tags && gh release create v$(node -p \"require('./package.json').version\") --generate-notes",
+    "release:major": "npm version major -m 'v%s' && git push && git push --tags && gh release create v$(node -p \"require('./package.json').version\") --generate-notes"
   },
   "keywords": [
     "documentation",
