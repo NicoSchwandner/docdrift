@@ -273,7 +273,8 @@ docdrift pin                        # re-baseline everything
 | Runtime       | Node.js                | `npx` zero-install, universal         |
 | Language      | TypeScript             | Type safety, good tooling             |
 | Parser        | web-tree-sitter (WASM) | No native compilation, multi-language |
-| CLI framework | Commander.js           | Lightweight, well-documented          |
+| CLI framework | yargs                  | Built-in tab completion, mature       |
+| Prompts       | @clack/prompts         | Beautiful interactive flows           |
 | Styling       | chalk                  | Terminal colors, widely used          |
 | YAML parsing  | yaml (npm)             | Full YAML spec support                |
 | Hashing       | Node.js crypto         | Built-in, no deps                     |

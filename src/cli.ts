@@ -3,92 +3,143 @@
 /**
  * docdrift CLI — Link business decisions to source code.
  *
- * Entry point. Registers all v1 commands.
+ * Entry point. Registers all v1 commands with tab completion.
  */
 
-import { Command } from "commander";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
-const program = new Command();
-
-program
-  .name("docdrift")
-  .description(
-    "Link business decisions to source code. Detect when code drifts from documentation.",
-  )
+yargs(hideBin(process.argv))
+  .scriptName("docdrift")
   .version("0.0.1")
-  .action(async (_opts) => {
-    // Bare `docdrift` = check for drift (most common action)
+  .usage("$0 [command]", "Check for drift (default)", {}, async () => {
+    // Bare `docdrift` = check for drift
     console.log("Not yet implemented");
-  });
+  })
 
-// -- Query --
+  // -- Query --
 
-program
-  .command("lookup <path>")
-  .description("Find context nodes linked to a source file")
-  .option("--json", "Output as JSON")
-  .action(async (_path, _opts) => {
-    console.log("Not yet implemented");
-  });
+  .command(
+    "lookup <path>",
+    "Find context nodes linked to a source file",
+    (y) =>
+      y
+        .positional("path", { type: "string", demandOption: true })
+        .option("json", { type: "boolean", describe: "Output as JSON" }),
+    async () => {
+      console.log("Not yet implemented");
+    },
+  )
 
-program
-  .command("show <node-id>")
-  .description("Display the full content of a context node")
-  .option("--raw", "Show raw frontmatter")
-  .option("--json", "Output as JSON")
-  .action(async (_nodeId, _opts) => {
-    console.log("Not yet implemented");
-  });
+  .command(
+    "show <node-id>",
+    "Display the full content of a context node",
+    (y) =>
+      y
+        .positional("node-id", { type: "string", demandOption: true })
+        .option("raw", { type: "boolean", describe: "Show raw frontmatter" })
+        .option("json", { type: "boolean", describe: "Output as JSON" }),
+    async () => {
+      console.log("Not yet implemented");
+    },
+  )
 
-// -- Drift lifecycle --
+  // -- Drift lifecycle --
 
-program
-  .command("check")
-  .description("Check for drift between context nodes and source code")
-  .option("--ci", "Output GitHub Actions annotations")
-  .option("--all", "Show acknowledged drift too")
-  .option("--json", "Output as JSON")
-  .action(async (_opts) => {
-    console.log("Not yet implemented");
-  });
+  .command(
+    "check",
+    "Check for drift between context nodes and source code",
+    (y) =>
+      y
+        .option("ci", {
+          type: "boolean",
+          describe: "Output GitHub Actions annotations",
+        })
+        .option("all", {
+          type: "boolean",
+          describe: "Show acknowledged drift too",
+        })
+        .option("json", { type: "boolean", describe: "Output as JSON" }),
+    async () => {
+      console.log("Not yet implemented");
+    },
+  )
 
-program
-  .command("pin")
-  .description("Record current code state as the known-good baseline")
-  .option("--node <id>", "Pin a specific node only")
-  .option("--force", "Re-pin even if baseline exists")
-  .action(async (_opts) => {
-    console.log("Not yet implemented");
-  });
+  .command(
+    "pin",
+    "Record current code state as the known-good baseline",
+    (y) =>
+      y
+        .option("node", {
+          type: "string",
+          describe: "Pin a specific node only",
+        })
+        .option("force", {
+          type: "boolean",
+          describe: "Re-pin even if baseline exists",
+        }),
+    async () => {
+      console.log("Not yet implemented");
+    },
+  )
 
-program
-  .command("ack <node-id>")
-  .description("Mark context as still accurate after code changes")
-  .action(async (_nodeId) => {
-    console.log("Not yet implemented");
-  });
+  .command(
+    "ack <node-id>",
+    "Mark context as still accurate after code changes",
+    (y) => y.positional("node-id", { type: "string", demandOption: true }),
+    async () => {
+      console.log("Not yet implemented");
+    },
+  )
 
-// -- Maintain --
+  // -- Maintain --
 
-program
-  .command("init")
-  .description("Initialize docdrift in the current repository")
-  .action(async () => {
-    console.log("Not yet implemented");
-  });
+  .command(
+    "init",
+    "Initialize docdrift in the current repository",
+    {},
+    async () => {
+      console.log("Not yet implemented");
+    },
+  )
 
-program
-  .command("create")
-  .description("Create a new context node interactively")
-  .action(async () => {
-    console.log("Not yet implemented");
-  });
+  .command(
+    "create",
+    "Create a new context node interactively",
+    {},
+    async () => {
+      console.log("Not yet implemented");
+    },
+  )
 
-program
-  .command("edit <node-id>")
-  .description("Open a context node in your editor")
-  .action(async (_nodeId) => {
-    console.log("Not yet implemented");
-  });
+  .command(
+    "edit <node-id>",
+    "Open a context node in your editor",
+    (y) => y.positional("node-id", { type: "string", demandOption: true }),
+    async () => {
+      console.log("Not yet implemented");
+    },
+  )
 
-program.parse();
+  // -- Tab completion --
+
+  .completion(
+    "completion",
+    "Generate shell completion script",
+    (current, argv, defaultCompletions, done) => {
+      const cmdsNeedingNodeId = ["show", "ack", "edit"];
+      const cmd = argv._[0] as string;
+
+      if (cmdsNeedingNodeId.includes(cmd)) {
+        // TODO: read .context/index.json and return node IDs
+        done([]);
+      } else {
+        defaultCompletions(done);
+      }
+    },
+  )
+
+  .strict()
+  .demandCommand(0)
+  .help()
+  .parse();

@@ -70,7 +70,7 @@ Key files to reference when porting:
 
 - **Runtime:** Node.js 18+
 - **Language:** TypeScript (ESM)
-- **CLI:** Commander.js for routing, @clack/prompts for interactive flows
+- **CLI:** yargs for routing + built-in tab completion, @clack/prompts for interactive flows
 - **Parser:** web-tree-sitter (WASM grammars, no native compilation)
 - **Output:** chalk or picocolors
 - **YAML:** yaml (npm)
