@@ -8,13 +8,21 @@
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { runInit } from "./commands/init.js";
+import { runLookup } from "./commands/lookup.js";
+import { runShow } from "./commands/show.js";
+import { runCheck } from "./commands/check.js";
+import { runPin } from "./commands/pin.js";
+import { runAck } from "./commands/ack.js";
+import { runCreate } from "./commands/create.js";
+import { runEdit } from "./commands/edit.js";
+import { findContextDir, ensureIndex } from "./index.js";
 
 yargs(hideBin(process.argv))
   .scriptName("docdrift")
   .version("0.0.1")
   .usage("$0 [command]", "Check for drift (default)", {}, async () => {
-    // Bare `docdrift` = check for drift
-    console.log("Not yet implemented");
+    process.exitCode = await runCheck({});
   })
 
   // -- Query --
@@ -26,8 +34,8 @@ yargs(hideBin(process.argv))
       y
         .positional("path", { type: "string", demandOption: true })
         .option("json", { type: "boolean", describe: "Output as JSON" }),
-    async () => {
-      console.log("Not yet implemented");
+    async (argv) => {
+      process.exitCode = await runLookup(argv.path!, argv.json ?? false);
     },
   )
 
@@ -39,8 +47,12 @@ yargs(hideBin(process.argv))
         .positional("node-id", { type: "string", demandOption: true })
         .option("raw", { type: "boolean", describe: "Show raw frontmatter" })
         .option("json", { type: "boolean", describe: "Output as JSON" }),
-    async () => {
-      console.log("Not yet implemented");
+    async (argv) => {
+      process.exitCode = await runShow(
+        argv["node-id"]!,
+        argv.raw ?? false,
+        argv.json ?? false,
+      );
     },
   )
 
@@ -60,8 +72,12 @@ yargs(hideBin(process.argv))
           describe: "Show acknowledged drift too",
         })
         .option("json", { type: "boolean", describe: "Output as JSON" }),
-    async () => {
-      console.log("Not yet implemented");
+    async (argv) => {
+      process.exitCode = await runCheck({
+        ci: argv.ci,
+        all: argv.all,
+        json: argv.json,
+      });
     },
   )
 
@@ -78,8 +94,11 @@ yargs(hideBin(process.argv))
           type: "boolean",
           describe: "Re-pin even if baseline exists",
         }),
-    async () => {
-      console.log("Not yet implemented");
+    async (argv) => {
+      process.exitCode = await runPin({
+        node: argv.node,
+        force: argv.force,
+      });
     },
   )
 
@@ -87,8 +106,8 @@ yargs(hideBin(process.argv))
     "ack <node-id>",
     "Mark context as still accurate after code changes",
     (y) => y.positional("node-id", { type: "string", demandOption: true }),
-    async () => {
-      console.log("Not yet implemented");
+    async (argv) => {
+      process.exitCode = await runAck(argv["node-id"]!);
     },
   )
 
@@ -97,9 +116,14 @@ yargs(hideBin(process.argv))
   .command(
     "init",
     "Initialize docdrift in the current repository",
-    {},
-    async () => {
-      console.log("Not yet implemented");
+    (y) =>
+      y.option("nodes-dir", {
+        type: "string",
+        describe:
+          "Path for context nodes relative to repo root (default: docs)",
+      }),
+    async (argv) => {
+      await runInit({ nodesDir: argv["nodes-dir"] });
     },
   )
 
@@ -108,7 +132,7 @@ yargs(hideBin(process.argv))
     "Create a new context node interactively",
     {},
     async () => {
-      console.log("Not yet implemented");
+      process.exitCode = await runCreate();
     },
   )
 
@@ -116,8 +140,8 @@ yargs(hideBin(process.argv))
     "edit <node-id>",
     "Open a context node in your editor",
     (y) => y.positional("node-id", { type: "string", demandOption: true }),
-    async () => {
-      console.log("Not yet implemented");
+    async (argv) => {
+      process.exitCode = await runEdit(argv["node-id"]!);
     },
   )
 
@@ -126,12 +150,19 @@ yargs(hideBin(process.argv))
   .completion(
     "completion",
     "Generate shell completion script",
-    (current, argv, defaultCompletions, done) => {
+    async (current: string, argv: any, defaultCompletions: any, done: any) => {
       const cmdsNeedingNodeId = ["show", "ack", "edit"];
       const cmd = argv._[0] as string;
 
       if (cmdsNeedingNodeId.includes(cmd)) {
-        // TODO: read .context/index.json and return node IDs
+        try {
+          const contextDir = findContextDir();
+          if (contextDir) {
+            const index = await ensureIndex(contextDir);
+            done(index.nodes.map((n) => n.id));
+            return;
+          }
+        } catch {}
         done([]);
       } else {
         defaultCompletions(done);

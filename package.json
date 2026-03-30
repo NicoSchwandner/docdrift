@@ -27,10 +27,12 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@clack/prompts": "^1.1.0",
     "chalk": "^5.0.0",
-    "yargs": "^17.0.0",
+    "tree-sitter-wasms": "^0.1.13",
     "web-tree-sitter": "^0.24.0",
-    "yaml": "^2.0.0"
+    "yaml": "^2.0.0",
+    "yargs": "^17.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
