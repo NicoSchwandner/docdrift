@@ -1,6 +1,6 @@
 {
   "name": "docdrift",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Link business decisions to source code. Detect when code drifts from documentation.",
   "type": "module",
   "bin": {
